@@ -41,12 +41,23 @@ pipeline {
                 }
             }
         }
+        stage('Trivy Scan') {
+            steps {
+
+                bat '''
+                trivy fs ^
+                --severity HIGH,CRITICAL ^
+                .
+                '''
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
                 bat 'docker build -t %IMAGE_NAME% .'
             }
         }
+
 
         stage('Push Docker Image') {
             steps {
