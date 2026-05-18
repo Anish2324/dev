@@ -3,18 +3,17 @@ const path = require('path');
 
 const app = express();
 
-// Middleware
 app.use(express.static('public'));
-app.use(express.json());
 
-// Routes
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// API Endpoints
 app.get('/api/status', (req, res) => {
-    res.json({ status: 'running' });
+    res.json({
+        status: 'running',
+        deployment: 'successful'
+    });
 });
 
 app.get('/api/health', (req, res) => {
