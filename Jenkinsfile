@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "YOUR_DOCKERHUB_USERNAME/simple-devops-app"
+        IMAGE_NAME = "anvesh1605/simple-devops-app"
     }
 
     stages {
@@ -25,19 +25,25 @@ pipeline {
 
         stage('SonarCloud Scan') {
             steps {
-                withCredentials([string(
-                    credentialsId: 'sonar-token',
-                    variable: 'SONAR_TOKEN'
-                )]) {
 
-                    bat '''
-                    sonar-scanner ^
-                    -Dsonar.projectKey=YOUR_PROJECT_KEY ^
-                    -Dsonar.organization=YOUR_ORG ^
-                    -Dsonar.sources=. ^
-                    -Dsonar.host.url=https://sonarcloud.io ^
-                    -Dsonar.login=%SONAR_TOKEN%
-                    '''
+                script {
+
+                    def scannerHome = tool 'sonar-scanner'
+
+                    withCredentials([string(
+                        credentialsId: 'sonar-token',
+                        variable: 'SONAR_TOKEN'
+                    )]) {
+
+                        bat """
+                        ${scannerHome}\\bin\\sonar-scanner.bat ^
+                        -Dsonar.projectKey=anvesh1605_simple-devops-app ^
+                        -Dsonar.organization=anvesh1605 ^
+                        -Dsonar.sources=. ^
+                        -Dsonar.host.url=https://sonarcloud.io ^
+                        -Dsonar.login=%SONAR_TOKEN%
+                        """
+                    }
                 }
             }
         }
@@ -62,6 +68,7 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
+
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub',
                     usernameVariable: 'DOCKER_USER',
