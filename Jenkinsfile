@@ -48,23 +48,23 @@ pipeline {
             }
         }
 
-        stage('Dependency Check') {
-            steps {
+        // stage('Dependency Check') {
+        //     steps {
 
-                script {
+        //         script {
 
-                    def dcHome = tool 'dependency-check'
+        //             def dcHome = tool 'dependency-check'
 
-                    bat """
-                    ${dcHome}\\bin\\dependency-check.bat ^
-                    --project "simple-devops-app" ^
-                    --scan . ^
-                    --format HTML ^
-                    --out dependency-check-report
-                    """
-                }
-            }
-        }
+        //             bat """
+        //             ${dcHome}\\bin\\dependency-check.bat ^
+        //             --project "simple-devops-app" ^
+        //             --scan . ^
+        //             --format HTML ^
+        //             --out dependency-check-report
+        //             """
+        //         }
+        //     }
+        // }
 
         stage('Build Docker Image') {
             steps {
