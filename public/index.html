@@ -1,9 +1,143 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>DevOps Project</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps CI/CD Pipeline Project</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>DevOps CI/CD Pipeline Working</h1>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">🚀</span> DevOps Pipeline
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#technologies" class="nav-link">Technologies</a></li>
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#footer" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">DevOps CI/CD Pipeline Project</h1>
+            <p class="hero-subtitle">Automated testing, building, and deployment with Jenkins, Docker & Cloud</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="checkStatus()">Check Status</button>
+                <button class="btn btn-secondary" onclick="checkHealth()">Health Check</button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="pipeline-diagram">
+                <div class="step">GitHub</div>
+                <div class="arrow">→</div>
+                <div class="step">Jenkins</div>
+                <div class="arrow">→</div>
+                <div class="step">Docker</div>
+                <div class="arrow">→</div>
+                <div class="step">Render</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technologies Section -->
+    <section id="technologies" class="technologies">
+        <h2 class="section-title">Technologies Used</h2>
+        <div class="tech-grid">
+            <div class="tech-card">
+                <div class="tech-icon">📝</div>
+                <h3>Jenkins</h3>
+                <p>Continuous Integration & Deployment automation</p>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon">🐳</div>
+                <h3>Docker</h3>
+                <p>Containerization for consistent environments</p>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon">🔍</div>
+                <h3>SonarCloud</h3>
+                <p>Code quality and security analysis</p>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon">🛡️</div>
+                <h3>Trivy</h3>
+                <p>Vulnerability scanning for containers</p>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon">☁️</div>
+                <h3>Render</h3>
+                <p>Modern cloud platform for deployment</p>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon">🔗</div>
+                <h3>GitHub</h3>
+                <p>Version control and repository hosting</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <h2 class="section-title">Key Features</h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <h3>Automated Pipeline</h3>
+                <p>Streamlined CI/CD workflow from code push to deployment</p>
+            </div>
+            <div class="feature-item">
+                <h3>Code Quality</h3>
+                <p>Automated testing and static code analysis</p>
+            </div>
+            <div class="feature-item">
+                <h3>Security Scanning</h3>
+                <p>Vulnerability detection in containers and dependencies</p>
+            </div>
+            <div class="feature-item">
+                <h3>Fast Deployment</h3>
+                <p>Quick and reliable deployment to cloud platforms</p>
+            </div>
+            <div class="feature-item">
+                <h3>Scalability</h3>
+                <p>Docker containers enable easy scaling and management</p>
+            </div>
+            <div class="feature-item">
+                <h3>Monitoring Ready</h3>
+                <p>API endpoints for health checks and status monitoring</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="footer" class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About</h4>
+                <p>A comprehensive DevOps lab project demonstrating CI/CD best practices</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="/api/status">API Status</a></li>
+                    <li><a href="/api/health">Health Check</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>APIs</h4>
+                <p><code>GET /api/status</code> - Pipeline status</p>
+                <p><code>GET /api/health</code> - Health check</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 DevOps Lab Assignment. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
