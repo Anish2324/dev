@@ -50,13 +50,19 @@ pipeline {
 
         stage('Dependency Check') {
             steps {
-                bat '''
-                dependency-check.bat ^
-                --project "simple-devops-app" ^
-                --scan . ^
-                --format HTML ^
-                --out dependency-check-report
-                '''
+
+                script {
+
+                    def dcHome = tool 'dependency-check'
+
+                    bat """
+                    ${dcHome}\\bin\\dependency-check.bat ^
+                    --project "simple-devops-app" ^
+                    --scan . ^
+                    --format HTML ^
+                    --out dependency-check-report
+                    """
+                }
             }
         }
 
