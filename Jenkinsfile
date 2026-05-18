@@ -42,9 +42,15 @@ pipeline {
             }
         }
 
+        stage('Build Docker Image') {
+            steps {
+                bat 'docker build -t %IMAGE_NAME% .'
+            }
+        }
+
         stage('Test') {
             steps {
-                echo 'Sonar working'
+                echo 'Sonar and Docker working'
             }
         }
     }
