@@ -11,12 +11,6 @@ pipeline {
 
     stages {
 
-        stage('Clone') {
-            steps {
-                echo 'Repository already loaded by Jenkins'
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 bat 'npm install'
@@ -48,48 +42,9 @@ pipeline {
             }
         }
 
-        // stage('Dependency Check') {
-        //     steps {
-
-        //         script {
-
-        //             def dcHome = tool 'dependency-check'
-
-        //             bat """
-        //             ${dcHome}\\bin\\dependency-check.bat ^
-        //             --project "simple-devops-app" ^
-        //             --scan . ^
-        //             --format HTML ^
-        //             --out dependency-check-report
-        //             """
-        //         }
-        //     }
-        // }
-
         stage('Build Docker Image') {
             steps {
                 bat 'docker build -t %IMAGE_NAME% .'
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-
-                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
-                    bat 'docker push %IMAGE_NAME%'
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Render deployment enabled'
             }
         }
     }
