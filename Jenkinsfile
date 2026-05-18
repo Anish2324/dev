@@ -3,7 +3,6 @@ pipeline {
 
     tools {
         nodejs 'nodejs'
-        hudson.plugins.sonar.SonarRunnerInstallation 'sonar-scanner'
     }
 
     environment {
