@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "anvesh1605/simple-devops-app"
+        IMAGE_NAME = "anveshbv16/simple-devops-app"
     }
 
     stages {
@@ -47,6 +47,7 @@ pipeline {
                 bat 'docker build -t %IMAGE_NAME% .'
             }
         }
+
         stage('Push Docker Image') {
             steps {
 
