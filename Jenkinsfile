@@ -46,10 +46,13 @@ pipeline {
             steps {
 
                 bat '''
-                "C:\\trivy.exe" fs ^
+                C:\\trivy.exe fs ^
                 --severity HIGH,CRITICAL ^
-                .
+                --format table ^
+                . > trivy-report.txt
                 '''
+
+                bat 'type trivy-report.txt'
             }
         }
 
@@ -81,4 +84,5 @@ pipeline {
             }
         }
     }
+
 }
