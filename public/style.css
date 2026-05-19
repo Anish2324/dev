@@ -306,7 +306,281 @@ section {
     color: #999;
 }
 
-/* Responsive Design */
+/* ========== Dashboard Section ========== */
+.dashboard {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.dashboard .section-title {
+    color: white;
+}
+
+.dashboard-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.btn-small {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background-color: white;
+    color: #667eea;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-small:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.dashboard-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-5px);
+}
+
+.card-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+}
+
+.card-content {
+    text-align: center;
+}
+
+.card-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+.card-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-top: 0.5rem;
+}
+
+.quote-card {
+    grid-column: auto / span 1;
+}
+
+.card-quote {
+    font-size: 1.1rem;
+    font-style: italic;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.card-author {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.pipeline-status {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pipeline-item {
+    font-size: 0.95rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+/* ========== System Info Section ========== */
+.system-info {
+    background-color: white;
+}
+
+.system-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.system-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.system-card:hover {
+    transform: translateY(-3px);
+}
+
+.system-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.system-value {
+    font-size: 1.3rem;
+    color: #667eea;
+    font-weight: bold;
+}
+
+/* ========== Notes Section ========== */
+.notes-section {
+    background-color: #f8f9fa;
+}
+
+.notes-input {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.input-field {
+    padding: 0.75rem;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.notes-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.note-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.note-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.note-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.note-content {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.note-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.note-time {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.btn-delete {
+    padding: 0.4rem 0.8rem;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-delete:hover {
+    background-color: #d32f2f;
+}
+
+.empty-message {
+    text-align: center;
+    color: #999;
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* ========== Feedback Section ========== */
+.feedback-section {
+    background-color: white;
+}
+
+.feedback-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.feedback-message {
+    text-align: center;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+/* ========== Responsive Design ========== */
 @media (max-width: 768px) {
     .nav-menu {
         gap: 1rem;
@@ -358,6 +632,31 @@ section {
         flex-direction: column;
         text-align: center;
     }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-controls {
+        flex-direction: column;
+    }
+
+    .btn-small {
+        width: 100%;
+    }
+
+    .system-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .notes-list {
+        grid-template-columns: 1fr;
+    }
+
+    .note-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -388,6 +687,34 @@ section {
 
     .btn {
         width: 100%;
+    }
+
+    .dashboard-card {
+        padding: 1.5rem;
+    }
+
+    .card-value {
+        font-size: 1.5rem;
+    }
+
+    .card-quote {
+        font-size: 1rem;
+    }
+
+    .system-card {
+        padding: 1rem;
+    }
+
+    .system-value {
+        font-size: 1.1rem;
+    }
+
+    .notes-input {
+        max-width: 100%;
+    }
+
+    .feedback-form {
+        max-width: 100%;
     }
 }
 
