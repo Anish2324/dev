@@ -46,7 +46,7 @@ pipeline {
             steps {
 
                 bat '''
-                C:\\trivy.exe fs ^
+                "C:\\Users\\Anish\\Downloads\\trivy_0.70.0_windows-64bit\\trivy.exe" fs ^
                 --severity HIGH,CRITICAL ^
                 .
                 '''
