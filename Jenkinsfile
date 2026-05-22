@@ -31,8 +31,8 @@ pipeline {
 
                         bat """
                         ${scannerHome}\\bin\\sonar-scanner.bat ^
-                        -Dsonar.projectKey=anvesh1605_simple-devops-app ^
-                        -Dsonar.organization=anvesh1605 ^
+                        -Dsonar.projectKey=Anish2324_assignment_Dev ^
+                        -Dsonar.organization=anish2324 ^
                         -Dsonar.sources=. ^
                         -Dsonar.host.url=https://sonarcloud.io ^
                         -Dsonar.login=%SONAR_TOKEN%
