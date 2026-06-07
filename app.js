@@ -1,8 +1,51 @@
 const express = require('express');
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 
 const app = express();
+
+// ========== Configuration ==========
+const COUNTER_FILE = 'visit_counter.json';
+const PORT = process.env.PORT || 3000;
+
+// ========== Utility Functions ==========
+
+// HTML Sanitization function to prevent XSS
+function sanitizeHtml(str) {
+    if (typeof str !== 'string') return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
+        .replace(/\//g, '&#x2F;');
+}
+
+// Load or initialize visitor counter
+function loadVisitCounter() {
+    try {
+        if (fs.existsSync(COUNTER_FILE)) {
+            const data = fs.readFileSync(COUNTER_FILE, 'utf8');
+            const parsed = JSON.parse(data);
+            console.log(`[INFO] Loaded visitor counter from file: ${parsed.count}`);
+            return parsed.count || 0;
+        }
+    } catch (error) {
+        console.error(`[ERROR] Failed to load visit counter: ${error.message}`);
+    }
+    return 0;
+}
+
+// Save visitor counter to file
+function saveVisitCounter(count) {
+    try {
+        fs.writeFileSync(COUNTER_FILE, JSON.stringify({ count, timestamp: new Date().toISOString() }, null, 2));
+    } catch (error) {
+        console.error(`[ERROR] Failed to save visit counter: ${error.message}`);
+    }
+}
 
 // ========== Middleware ==========
 
@@ -23,10 +66,8 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.static('public'));
-
 // ========== In-Memory Data Storage ==========
-let visitCounter = 0;
+let visitCounter = loadVisitCounter();
 const serverStartTime = Date.now();
 let notes = []; // In-memory notes storage
 let feedback = []; // In-memory feedback storage
@@ -51,11 +92,16 @@ const quotes = [
 
 // ========== Routes ==========
 
-// Frontend - Home Page
+// IMPORTANT: Frontend - Home Page route MUST be BEFORE static middleware
+// This ensures visitor counter increments correctly
 app.get('/', (req, res) => {
     visitCounter++;
+    saveVisitCounter(visitCounter);
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+// Static files middleware - AFTER route handlers
+app.use(express.static('public'));
 
 // ========== Health & Status APIs ==========
 
@@ -67,11 +113,11 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// API: Status
+// API: Status - Now configurable with environment variables
 app.get('/api/status', (req, res) => {
     res.json({
-        status: 'running',
-        deployment: 'successful'
+        status: process.env.DEPLOY_STATUS_TEXT || 'running',
+        deployment: process.env.DEPLOY_SUCCESS || 'successful'
     });
 });
 
@@ -122,14 +168,15 @@ app.get('/api/system', (req, res) => {
 
 // ========== Pipeline & Metrics APIs ==========
 
-// API: Pipeline Status
+// API: Pipeline Status - Uses environment variables for configurable status
+// Can be set via: JENKINS_STATUS, SONAR_STATUS, TRIVY_STATUS, DOCKER_STATUS, DEPLOY_STATUS
 app.get('/api/pipeline', (req, res) => {
     res.json({
-        jenkins: 'success',
-        sonar: 'passed',
-        trivy: 'passed',
-        docker: 'built',
-        deployment: 'active'
+        jenkins: process.env.JENKINS_STATUS || 'success',
+        sonar: process.env.SONAR_STATUS || 'passed',
+        trivy: process.env.TRIVY_STATUS || 'passed',
+        docker: process.env.DOCKER_STATUS || 'built',
+        deployment: process.env.DEPLOY_STATUS || 'active'
     });
 });
 
@@ -174,10 +221,11 @@ app.get('/api/notes', (req, res) => {
     });
 });
 
-// POST: Add Note
+// POST: Add Note - With input validation and XSS protection
 app.post('/api/notes', (req, res) => {
     const { title, content } = req.body;
     
+    // Validate required fields
     if (!title || !content) {
         return res.status(400).json({
             success: false,
@@ -185,10 +233,30 @@ app.post('/api/notes', (req, res) => {
         });
     }
     
+    // Validate title length
+    if (title.length > 100) {
+        return res.status(400).json({
+            success: false,
+            message: 'Title must be 100 characters or less'
+        });
+    }
+    
+    // Validate content length
+    if (content.length > 5000) {
+        return res.status(400).json({
+            success: false,
+            message: 'Content must be 5000 characters or less'
+        });
+    }
+    
+    // Sanitize input to prevent XSS
+    const sanitizedTitle = sanitizeHtml(title.trim());
+    const sanitizedContent = sanitizeHtml(content.trim());
+    
     const note = {
         id: Date.now(),
-        title: title,
-        content: content,
+        title: sanitizedTitle,
+        content: sanitizedContent,
         timestamp: new Date().toISOString()
     };
     
@@ -222,10 +290,11 @@ app.delete('/api/notes/:id', (req, res) => {
 
 // ========== Feedback API ==========
 
-// POST: Add Feedback
+// POST: Add Feedback - With input validation and XSS protection
 app.post('/api/feedback', (req, res) => {
     const { name, message } = req.body;
     
+    // Validate required fields
     if (!name || !message) {
         return res.status(400).json({
             success: false,
@@ -233,10 +302,30 @@ app.post('/api/feedback', (req, res) => {
         });
     }
     
+    // Validate name length
+    if (name.length > 50) {
+        return res.status(400).json({
+            success: false,
+            message: 'Name must be 50 characters or less'
+        });
+    }
+    
+    // Validate message length
+    if (message.length > 10000) {
+        return res.status(400).json({
+            success: false,
+            message: 'Message must be 10000 characters or less'
+        });
+    }
+    
+    // Sanitize input to prevent XSS
+    const sanitizedName = sanitizeHtml(name.trim());
+    const sanitizedMessage = sanitizeHtml(message.trim());
+    
     const feedbackItem = {
         id: Date.now(),
-        name: name,
-        message: message,
+        name: sanitizedName,
+        message: sanitizedMessage,
         timestamp: new Date().toISOString()
     };
     
@@ -258,10 +347,9 @@ app.get('/api/feedback', (req, res) => {
 });
 
 // ========== Server Initialization ==========
-const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`Started at: ${new Date().toISOString()}`);
+    console.log(`Visitor counter loaded: ${visitCounter}`);
 });
