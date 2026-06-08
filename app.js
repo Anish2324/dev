@@ -2,12 +2,15 @@ const express = require('express');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const deploymentStore = require('./lib/deploymentStore');
 
 const app = express();
+app.disable('x-powered-by');
 
 // ========== Configuration ==========
-const COUNTER_FILE = 'visit_counter.json';
+const COUNTER_FILE = path.join(__dirname, 'visit_counter.json');
 const PORT = process.env.PORT || 3000;
+const REQUEST_BODY_LIMIT = '100kb';
 
 // ========== Utility Functions ==========
 
@@ -21,6 +24,25 @@ function sanitizeHtml(str) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#x27;')
         .replace(/\//g, '&#x2F;');
+}
+
+function normalizeText(value) {
+    if (typeof value !== 'string') {
+        return '';
+    }
+
+    return value.trim();
+}
+
+function isNonEmptyText(value) {
+    return normalizeText(value).length > 0;
+}
+
+function sendValidationError(res, message) {
+    return res.status(400).json({
+        success: false,
+        message
+    });
 }
 
 // Load or initialize visitor counter
@@ -41,7 +63,19 @@ function loadVisitCounter() {
 // Save visitor counter to file
 function saveVisitCounter(count) {
     try {
-        fs.writeFileSync(COUNTER_FILE, JSON.stringify({ count, timestamp: new Date().toISOString() }, null, 2));
+        const payload = JSON.stringify({
+            count,
+            timestamp: new Date().toISOString()
+        }, null, 2);
+        const temporaryFile = `${COUNTER_FILE}.tmp`;
+
+        fs.writeFileSync(temporaryFile, payload);
+
+        if (fs.existsSync(COUNTER_FILE)) {
+            fs.rmSync(COUNTER_FILE, { force: true });
+        }
+
+        fs.renameSync(temporaryFile, COUNTER_FILE);
     } catch (error) {
         console.error(`[ERROR] Failed to save visit counter: ${error.message}`);
     }
@@ -50,8 +84,8 @@ function saveVisitCounter(count) {
 // ========== Middleware ==========
 
 // Parse JSON bodies
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
+app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT }));
 
 // Request logging middleware - logs method, endpoint, timestamp
 let apiRequestCount = 0;
@@ -100,8 +134,12 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get('/deployment-history', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'deployment-history.html'));
+});
+
 // Static files middleware - AFTER route handlers
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ========== Health & Status APIs ==========
 
@@ -211,6 +249,146 @@ app.get('/api/quote', (req, res) => {
     });
 });
 
+// ========== Deployment Persistence APIs ==========
+
+app.post('/api/deployments/start', async (req, res, next) => {
+    try {
+        const scenarioName = normalizeText(req.body?.scenarioName || req.body?.scenario_name, 'Deployment Run');
+        const stepNames = Array.isArray(req.body?.steps)
+            ? req.body.steps
+            : Array.isArray(req.body?.stepNames)
+                ? req.body.stepNames
+                : deploymentStore.DEFAULT_DEPLOYMENT_STEPS;
+
+        const deployment = await deploymentStore.createDeployment({
+            scenarioName,
+            stepNames,
+            status: 'running'
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Deployment record created',
+            deployment: deployment.deployment,
+            steps: deployment.steps
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+app.post('/api/deployments/:id/steps', async (req, res, next) => {
+    try {
+        const deploymentId = req.params.id;
+        const stepName = normalizeText(req.body?.stepName || req.body?.step_name);
+        const status = normalizeText(req.body?.status, 'pending').toLowerCase() || 'pending';
+        const logText = normalizeText(req.body?.logText || req.body?.log_text);
+
+        if (!stepName) {
+            return sendValidationError(res, 'Step name is required');
+        }
+
+        const result = await deploymentStore.upsertDeploymentStep({
+            deploymentId,
+            stepName,
+            status,
+            logText
+        });
+
+        res.json({
+            success: true,
+            message: 'Deployment step updated',
+            step: result.step,
+            log: result.log
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+app.post('/api/deployments/:id/status', async (req, res, next) => {
+    try {
+        const deploymentId = req.params.id;
+        const status = normalizeText(req.body?.status, 'running').toLowerCase() || 'running';
+        const logText = normalizeText(req.body?.logText || req.body?.log_text);
+
+        const result = await deploymentStore.updateDeploymentStatus({
+            deploymentId,
+            status,
+            logText
+        });
+
+        res.json({
+            success: true,
+            message: 'Deployment status updated',
+            deployment: result.deployment,
+            log: result.log
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+app.get('/api/deployments/history', async (req, res, next) => {
+    try {
+        const requestedLimit = Number.parseInt(req.query.limit, 10);
+        const limit = Number.isFinite(requestedLimit) && requestedLimit > 0 ? requestedLimit : 20;
+        const history = await deploymentStore.getDeploymentHistory(limit);
+
+        res.json({
+            success: true,
+            limit,
+            analytics: history.analytics,
+            deployments: history.deployments,
+            count: history.deployments.length
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+app.get('/api/deployments/:id/logs', async (req, res, next) => {
+    try {
+        const logs = await deploymentStore.getDeploymentLogs(req.params.id);
+
+        if (!logs) {
+            return res.status(404).json({
+                success: false,
+                message: 'Deployment not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            deploymentId: req.params.id,
+            logs,
+            count: logs.length
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+app.get('/api/deployments/:id', async (req, res, next) => {
+    try {
+        const deployment = await deploymentStore.getDeploymentById(req.params.id);
+
+        if (!deployment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Deployment not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            ...deployment
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 // ========== Notes API (In-Memory) ==========
 
 // GET: All Notes
@@ -224,34 +402,27 @@ app.get('/api/notes', (req, res) => {
 // POST: Add Note - With input validation and XSS protection
 app.post('/api/notes', (req, res) => {
     const { title, content } = req.body;
+    const normalizedTitle = normalizeText(title);
+    const normalizedContent = normalizeText(content);
     
     // Validate required fields
-    if (!title || !content) {
-        return res.status(400).json({
-            success: false,
-            message: 'Title and content are required'
-        });
+    if (!isNonEmptyText(title) || !isNonEmptyText(content)) {
+        return sendValidationError(res, 'Title and content are required');
     }
     
     // Validate title length
-    if (title.length > 100) {
-        return res.status(400).json({
-            success: false,
-            message: 'Title must be 100 characters or less'
-        });
+    if (normalizedTitle.length > 100) {
+        return sendValidationError(res, 'Title must be 100 characters or less');
     }
     
     // Validate content length
-    if (content.length > 5000) {
-        return res.status(400).json({
-            success: false,
-            message: 'Content must be 5000 characters or less'
-        });
+    if (normalizedContent.length > 5000) {
+        return sendValidationError(res, 'Content must be 5000 characters or less');
     }
     
     // Sanitize input to prevent XSS
-    const sanitizedTitle = sanitizeHtml(title.trim());
-    const sanitizedContent = sanitizeHtml(content.trim());
+    const sanitizedTitle = sanitizeHtml(normalizedTitle);
+    const sanitizedContent = sanitizeHtml(normalizedContent);
     
     const note = {
         id: Date.now(),
@@ -293,34 +464,27 @@ app.delete('/api/notes/:id', (req, res) => {
 // POST: Add Feedback - With input validation and XSS protection
 app.post('/api/feedback', (req, res) => {
     const { name, message } = req.body;
+    const normalizedName = normalizeText(name);
+    const normalizedMessage = normalizeText(message);
     
     // Validate required fields
-    if (!name || !message) {
-        return res.status(400).json({
-            success: false,
-            message: 'Name and message are required'
-        });
+    if (!isNonEmptyText(name) || !isNonEmptyText(message)) {
+        return sendValidationError(res, 'Name and message are required');
     }
     
     // Validate name length
-    if (name.length > 50) {
-        return res.status(400).json({
-            success: false,
-            message: 'Name must be 50 characters or less'
-        });
+    if (normalizedName.length > 50) {
+        return sendValidationError(res, 'Name must be 50 characters or less');
     }
     
     // Validate message length
-    if (message.length > 10000) {
-        return res.status(400).json({
-            success: false,
-            message: 'Message must be 10000 characters or less'
-        });
+    if (normalizedMessage.length > 10000) {
+        return sendValidationError(res, 'Message must be 10000 characters or less');
     }
     
     // Sanitize input to prevent XSS
-    const sanitizedName = sanitizeHtml(name.trim());
-    const sanitizedMessage = sanitizeHtml(message.trim());
+    const sanitizedName = sanitizeHtml(normalizedName);
+    const sanitizedMessage = sanitizeHtml(normalizedMessage);
     
     const feedbackItem = {
         id: Date.now(),
@@ -346,10 +510,63 @@ app.get('/api/feedback', (req, res) => {
     });
 });
 
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({
+            success: false,
+            message: 'API route not found'
+        });
+    }
+
+    next();
+});
+
+app.use((err, req, res, next) => {
+    console.error(`[ERROR] ${req.method} ${req.path}: ${err.message}`);
+
+    if (res.headersSent) {
+        return next(err);
+    }
+
+    const statusCode = err.status || 500;
+
+    if (req.path.startsWith('/api/')) {
+        return res.status(statusCode).json({
+            success: false,
+            message: statusCode === 500 ? 'Internal server error' : err.message
+        });
+    }
+
+    return res.status(statusCode).send('Internal Server Error');
+});
+
 // ========== Server Initialization ==========
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`Started at: ${new Date().toISOString()}`);
     console.log(`Visitor counter loaded: ${visitCounter}`);
+    console.log(`[INFO] Deployment persistence: ${deploymentStore.isSupabaseConfigured() ? 'Supabase' : 'memory fallback'}`);
 });
+
+function shutdown(signal) {
+    console.log(`[INFO] Received ${signal}, shutting down gracefully...`);
+
+    if (!server) {
+        process.exit(0);
+        return;
+    }
+
+    server.close(() => {
+        saveVisitCounter(visitCounter);
+        process.exit(0);
+    });
+
+    setTimeout(() => {
+        console.warn('[WARN] Forced shutdown after timeout.');
+        process.exit(1);
+    }, 5000).unref();
+}
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));

@@ -23,10 +23,11 @@
             <nav class="topnav" aria-label="Primary">
                 <a href="#dashboard">Dashboard</a>
                 <a href="#pipeline">Pipeline</a>
+                <a href="#deployment-simulator">Simulator</a>
+                <a href="/deployment-history">History</a>
                 <a href="#system-info">System</a>
                 <a href="#notes-section">Notes</a>
                 <a href="#feedback-section">Feedback</a>
-                <a href="#technologies">Tech</a>
                 <a href="#features">Features</a>
             </nav>
         </div>  
@@ -148,7 +149,7 @@
                     <div id="pipelineStatus" class="pipeline-mini">
                         <p class="empty-state">Loading pipeline status…</p>
                     </div>
-                    <p>GitHub → Jenkins → SonarCloud → Trivy → Docker → Render.</p>
+                    <p>Live status from the existing CI/CD APIs.</p>
                 </article>
 
                 <article class="dashboard-card" id="deploymentCard" data-tone="neutral">
@@ -160,6 +161,283 @@
                     <strong class="card-value" id="deploymentStatus">Loading…</strong>
                     <p>Deployment state reported by the status API.</p>
                 </article>
+            </div>
+        </section>
+
+        <section id="deployment-simulator" class="section-block shell">
+            <div class="section-heading">
+                <p class="eyebrow">Interactive preview</p>
+                <h2>CI/CD Deployment Simulator</h2>
+                <p>A compact frontend-only simulator and troubleshooting playbook for DevSecOps demos.</p>
+            </div>
+
+            <div class="simulator-layout">
+                <div class="panel-card simulator-card">
+                    <div class="panel-head">
+                        <div>
+                            <p class="panel-kicker">Simulation</p>
+                            <h3>Run a mock deployment</h3>
+                        </div>
+                        <span class="status-badge status-badge--neutral">Frontend only</span>
+                    </div>
+
+                    <p class="simulator-copy">Pick a mode, then run the staged animation to preview a success path or a realistic failure.</p>
+
+                    <div class="simulation-mode-bar">
+                        <div>
+                            <p class="panel-kicker">Simulation mode</p>
+                            <h4>Pick a scenario</h4>
+                        </div>
+                        <span id="simulationModeBadge" class="status-badge status-badge--success">Happy Path</span>
+                    </div>
+
+                    <div id="simulationModeControls" class="simulation-mode-controls" role="group" aria-label="Simulation modes"></div>
+
+                    <div class="simulator-actions">
+                        <button id="simulateDeploymentBtn" class="btn btn--primary" type="button">&#9654; Simulate Deployment</button>
+                        <button id="restartSimulationBtn" class="btn btn--secondary" type="button">Restart Simulation</button>
+                    </div>
+
+                    <div class="simulator-progress" aria-label="Deployment progress">
+                        <div class="simulator-progress__meta">
+                            <span id="simulatorStepLabel">Ready</span>
+                            <span id="simulatorProgressText">0%</span>
+                        </div>
+                        <div class="simulator-progress__track" aria-hidden="true">
+                            <div id="simulatorProgressBar" class="simulator-progress__bar"></div>
+                        </div>
+                    </div>
+
+                    <div id="simulatorResult" class="simulator-result">
+                        <span class="simulator-result__icon" aria-hidden="true">&#128640;</span>
+                        <div>
+                            <strong id="simulatorHeadline">Ready to simulate</strong>
+                            <p id="simulatorMessage">Frontend-only preview; real pipeline stays untouched.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-card simulator-timeline-card">
+                    <div class="panel-head">
+                        <div>
+                            <p class="panel-kicker">Timeline</p>
+                            <h3>Deployment stages</h3>
+                        </div>
+                        <span class="status-badge status-badge--neutral">6 steps</span>
+                    </div>
+
+                    <div id="simulatorStages" class="simulator-stages" aria-label="Deployment stages">
+                        <article class="simulator-step is-pending" data-step="git-push">
+                            <div class="simulator-step__head">
+                                <span class="simulator-step__icon">01</span>
+                                <div>
+                                    <h4>Git Push</h4>
+                                    <p>Source commit received.</p>
+                                </div>
+                            </div>
+                            <span class="simulator-step__state">Pending</span>
+                        </article>
+
+                        <article class="simulator-step is-pending" data-step="jenkins">
+                            <div class="simulator-step__head">
+                                <span class="simulator-step__icon">02</span>
+                                <div>
+                                    <h4>Jenkins Build</h4>
+                                    <p>Pipeline job starts running.</p>
+                                </div>
+                            </div>
+                            <span class="simulator-step__state">Pending</span>
+                        </article>
+
+                        <article class="simulator-step is-pending" data-step="sonar">
+                            <div class="simulator-step__head">
+                                <span class="simulator-step__icon">03</span>
+                                <div>
+                                    <h4>SonarCloud Analysis</h4>
+                                    <p>Quality checks complete.</p>
+                                </div>
+                            </div>
+                            <span class="simulator-step__state">Pending</span>
+                        </article>
+
+                        <article class="simulator-step is-pending" data-step="trivy">
+                            <div class="simulator-step__head">
+                                <span class="simulator-step__icon">04</span>
+                                <div>
+                                    <h4>Trivy Security Scan</h4>
+                                    <p>Container vulnerabilities scanned.</p>
+                                </div>
+                            </div>
+                            <span class="simulator-step__state">Pending</span>
+                        </article>
+
+                        <article class="simulator-step is-pending" data-step="docker">
+                            <div class="simulator-step__head">
+                                <span class="simulator-step__icon">05</span>
+                                <div>
+                                    <h4>Docker Image Build</h4>
+                                    <p>Release image is created.</p>
+                                </div>
+                            </div>
+                            <span class="simulator-step__state">Pending</span>
+                        </article>
+
+                        <article class="simulator-step is-pending" data-step="render">
+                            <div class="simulator-step__head">
+                                <span class="simulator-step__icon">06</span>
+                                <div>
+                                    <h4>Render Deployment</h4>
+                                    <p>App is deployed to Render.</p>
+                                </div>
+                            </div>
+                            <span class="simulator-step__state">Pending</span>
+                        </article>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-card troubleshooting-panel">
+                <div class="panel-head">
+                    <div>
+                        <p class="panel-kicker">Troubleshooting playbook</p>
+                        <h3>Stage error guide</h3>
+                    </div>
+                    <span id="playbookStageBadge" class="status-badge status-badge--neutral">GitHub</span>
+                </div>
+
+                <p id="playbookStageSummary" class="playbook-summary">
+                    Select a stage to inspect compact errors, prevention methods, and troubleshooting steps.
+                </p>
+
+                <div id="simulationStageControls" class="simulation-stage-controls" role="tablist" aria-label="Troubleshooting stages"></div>
+
+                <div id="failureSpotlight" class="failure-spotlight">
+                    <div class="failure-spotlight__head">
+                        <div>
+                            <p class="panel-kicker">Failure spotlight</p>
+                            <h4 id="failureName">Ready to learn</h4>
+                        </div>
+                        <span id="failureSeverityBadge" class="status-badge status-badge--neutral">Sample failure</span>
+                    </div>
+
+                    <p id="failureContext" class="failure-spotlight__hint">
+                        Select a stage or run a simulation to inspect a realistic failure.
+                    </p>
+
+                    <div class="failure-spotlight__facts">
+                        <article class="failure-fact">
+                            <span class="failure-fact__icon" aria-hidden="true">ED</span>
+                            <div>
+                                <span>Error Description</span>
+                                <p id="failureDescription"></p>
+                            </div>
+                        </article>
+                        <article class="failure-fact">
+                            <span class="failure-fact__icon" aria-hidden="true">RC</span>
+                            <div>
+                                <span>Root Cause</span>
+                                <p id="failureRootCause"></p>
+                            </div>
+                        </article>
+                        <article class="failure-fact">
+                            <span class="failure-fact__icon" aria-hidden="true">IM</span>
+                            <div>
+                                <span>Impact</span>
+                                <p id="failureImpact"></p>
+                            </div>
+                        </article>
+                        <article class="failure-fact">
+                            <span class="failure-fact__icon" aria-hidden="true">PR</span>
+                            <div>
+                                <span>Prevention</span>
+                                <p id="failurePrevention"></p>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="failure-spotlight__resolution">
+                        <span>Resolution Steps</span>
+                        <ol id="failureResolutionList"></ol>
+                    </div>
+                </div>
+
+                <details class="playbook-accordion" open>
+                    <summary>
+                        <div class="playbook-accordion__copy">
+                            <p class="panel-kicker">Error catalog</p>
+                            <h4>Open detailed failure cards</h4>
+                        </div>
+                        <span class="playbook-accordion__badge status-badge status-badge--neutral">5 cards</span>
+                        <span class="playbook-card__chevron" aria-hidden="true">&#8964;</span>
+                    </summary>
+
+                    <div class="playbook-grid">
+                        <details class="playbook-card">
+                            <summary>
+                                <span class="playbook-card__icon">01</span>
+                                <span class="playbook-card__content">
+                                    <strong>Common Errors</strong>
+                                    <small>Frequent breakpoints</small>
+                                </span>
+                                <span id="commonErrorCount" class="playbook-count"></span>
+                                <span class="playbook-card__chevron" aria-hidden="true">&#8964;</span>
+                            </summary>
+                            <div id="commonErrorsList" class="error-pill-list"></div>
+                        </details>
+
+                        <details class="playbook-card">
+                            <summary>
+                                <span class="playbook-card__icon">02</span>
+                                <span class="playbook-card__content">
+                                    <strong>Advanced Errors</strong>
+                                    <small>Edge-case failures</small>
+                                </span>
+                                <span id="advancedErrorCount" class="playbook-count"></span>
+                                <span class="playbook-card__chevron" aria-hidden="true">&#8964;</span>
+                            </summary>
+                            <div id="advancedErrorsList" class="error-pill-list"></div>
+                        </details>
+
+                        <details class="playbook-card">
+                            <summary>
+                                <span class="playbook-card__icon">03</span>
+                                <span class="playbook-card__content">
+                                    <strong>Real Project Errors</strong>
+                                    <small>Observed in demos</small>
+                                </span>
+                                <span id="realProjectErrorCount" class="playbook-count"></span>
+                                <span class="playbook-card__chevron" aria-hidden="true">&#8964;</span>
+                            </summary>
+                            <div id="realProjectErrorsList" class="error-pill-list"></div>
+                        </details>
+
+                        <details class="playbook-card">
+                            <summary>
+                                <span class="playbook-card__icon">04</span>
+                                <span class="playbook-card__content">
+                                    <strong>Prevention Methods</strong>
+                                    <small>Reduce recurrence</small>
+                                </span>
+                                <span id="preventionMethodCount" class="playbook-count"></span>
+                                <span class="playbook-card__chevron" aria-hidden="true">&#8964;</span>
+                            </summary>
+                            <div id="preventionMethodsList" class="error-pill-list"></div>
+                        </details>
+
+                        <details class="playbook-card">
+                            <summary>
+                                <span class="playbook-card__icon">05</span>
+                                <span class="playbook-card__content">
+                                    <strong>Troubleshooting Steps</strong>
+                                    <small>Recovery flow</small>
+                                </span>
+                                <span id="troubleshootingStepCount" class="playbook-count"></span>
+                                <span class="playbook-card__chevron" aria-hidden="true">&#8964;</span>
+                            </summary>
+                            <div id="troubleshootingStepsList" class="error-pill-list"></div>
+                        </details>
+                    </div>
+                </details>
             </div>
         </section>
 
@@ -385,52 +663,6 @@
             </div>
         </section>
 
-        <section id="technologies" class="section-block shell">
-            <div class="section-heading">
-                <p class="eyebrow">Technologies used</p>
-                <h2>Simple stack, modern presentation</h2>
-                <p>Each card uses a consistent style with clean labels and subtle hover motion.</p>
-            </div>
-
-            <div class="tech-grid">
-                <article class="tech-card">
-                    <span class="tech-card__icon">GH</span>
-                    <h3>GitHub</h3>
-                    <p>Source control and repository hosting.</p>
-                </article>
-
-                <article class="tech-card">
-                    <span class="tech-card__icon">JK</span>
-                    <h3>Jenkins</h3>
-                    <p>Continuous integration and deployment automation.</p>
-                </article>
-
-                <article class="tech-card">
-                    <span class="tech-card__icon">SC</span>
-                    <h3>SonarCloud</h3>
-                    <p>Quality checks and code analysis visibility.</p>
-                </article>
-
-                <article class="tech-card">
-                    <span class="tech-card__icon">TR</span>
-                    <h3>Trivy</h3>
-                    <p>Container vulnerability scanning.</p>
-                </article>
-
-                <article class="tech-card">
-                    <span class="tech-card__icon">DK</span>
-                    <h3>Docker</h3>
-                    <p>Consistent containerized builds.</p>
-                </article>
-
-                <article class="tech-card">
-                    <span class="tech-card__icon">RD</span>
-                    <h3>Render</h3>
-                    <p>Simple cloud deployment and hosting.</p>
-                </article>
-            </div>
-        </section>
-
         <section id="features" class="section-block shell">
             <div class="section-heading">
                 <p class="eyebrow">Key features</p>
@@ -441,38 +673,26 @@
             <div class="feature-grid">
                 <article class="feature-card">
                     <span class="feature-card__index">01</span>
-                    <h3>Single-page workflow</h3>
-                    <p>All important project details stay on one page for easy demos.</p>
+                    <h3>Live API data</h3>
+                    <p>Cards refresh from the existing backend endpoints.</p>
                 </article>
 
                 <article class="feature-card">
                     <span class="feature-card__index">02</span>
-                    <h3>Live API updates</h3>
-                    <p>Dashboard values refresh from the existing Express endpoints.</p>
+                    <h3>Mode-driven simulator</h3>
+                    <p>A clean frontend animation shows success and failure paths.</p>
                 </article>
 
                 <article class="feature-card">
                     <span class="feature-card__index">03</span>
-                    <h3>Visible pipeline chain</h3>
-                    <p>The CI/CD path is shown from GitHub through Render with status cues.</p>
+                    <h3>Stage error playbook</h3>
+                    <p>Each stage includes common issues, prevention, and resolution tips.</p>
                 </article>
 
                 <article class="feature-card">
                     <span class="feature-card__index">04</span>
-                    <h3>Notes with actions</h3>
-                    <p>Add and delete notes without leaving the dashboard.</p>
-                </article>
-
-                <article class="feature-card">
-                    <span class="feature-card__index">05</span>
-                    <h3>Feedback history</h3>
-                    <p>Send feedback and review previous entries in the same view.</p>
-                </article>
-
-                <article class="feature-card">
-                    <span class="feature-card__index">06</span>
-                    <h3>Responsive layout</h3>
-                    <p>Built to stay clean on laptops, tablets, and phones.</p>
+                    <h3>Notes and feedback</h3>
+                    <p>Keep quick project updates and visitor feedback in one place.</p>
                 </article>
             </div>
         </section>
