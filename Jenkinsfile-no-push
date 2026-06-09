@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "kinganish/simple-devops-app"
+        IMAGE_NAME = "anveshbv16/simple-devops-app"
     }
 
     stages {
@@ -31,8 +31,8 @@ pipeline {
 
                         bat """
                         ${scannerHome}\\bin\\sonar-scanner.bat ^
-                        -Dsonar.projectKey=Anish2324_assignment_Dev ^
-                        -Dsonar.organization=anish2324 ^
+                        -Dsonar.projectKey=anvesh1605_simple-devops-app ^
+                        -Dsonar.organization=anvesh1605 ^
                         -Dsonar.sources=. ^
                         -Dsonar.host.url=https://sonarcloud.io ^
                         -Dsonar.login=%SONAR_TOKEN%
@@ -46,7 +46,7 @@ pipeline {
             steps {
 
                 bat '''
-                "C:\\Users\\Anish\\Downloads\\trivy_0.70.0_windows-64bit\\trivy.exe" fs ^
+                C:\\trivy.exe fs ^
                 --severity HIGH,CRITICAL ^
                 .
                 '''
