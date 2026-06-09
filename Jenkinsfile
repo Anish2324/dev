@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "anveshbv16/simple-devops-app"
+        IMAGE_NAME = "kinganish/simple-devops-app"
     }
 
     stages {
